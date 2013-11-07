@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using YetAnotherEncryptionTool;
 
 namespace YetAnotherEncryptionToolGUI
 {
@@ -24,13 +25,34 @@ namespace YetAnotherEncryptionToolGUI
     {
         private OpenFileDialog FileSelector;
         private SaveFileDialog FileSave;
-        private enum Action { Encrypting, Decrypting };
-        private Action taskType;
+        private enum CryptoAction { Encrypting, Decrypting };
+        private CryptoAction taskType;
+        private FileCrypto crypto;
         public MainWindow()
         {
             FileSelector = new OpenFileDialog();
             FileSave = new SaveFileDialog();
+            crypto = new FileCrypto();
+
             InitializeComponent();
+        }
+
+        void crypto_WorkHandler(object sender, CryptoEventArgs e)
+        {
+            this.Dispatcher.Invoke((Action)(() =>
+                {
+                    System.Diagnostics.Debug.WriteLine("Updating Progress Bar: " + e.WorkDone + " of " + e.TotalWork + " = " + ((double)e.WorkDone / (double)e.TotalWork)*100 + "%");
+                    ProgressBar.Value = ((double)e.WorkDone / (double)e.TotalWork) * 100;
+                }));
+        }
+
+        void crypto_CompleteHandler(object sender, EventArgs e)
+        {
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                System.Diagnostics.Debug.WriteLine("Encryption Complete");
+                DisableUI(false);
+            }));
         }
 
         private void FileSelectButton_Click(object sender, RoutedEventArgs e)
@@ -42,19 +64,41 @@ namespace YetAnotherEncryptionToolGUI
                 if (FileSelector.FileName.EndsWith(".enc"))
                 {
                     EncryptDecryptButton.Content = "Decrypt";
-                    taskType = Action.Decrypting;
+                    taskType = CryptoAction.Decrypting;
                 }
                 else
                 {
                     EncryptDecryptButton.Content = "Encrypt";
-                    taskType = Action.Encrypting;
+                    taskType = CryptoAction.Encrypting;
                 }
             }
         }
 
         private void EncryptDecryptButton_Click(object sender, RoutedEventArgs e)
         {
+            DisableUI(true);
             ProgressBar.Visibility = Visibility.Visible;
+            if (taskType == CryptoAction.Encrypting)
+            {
+                FileSave.Title = "Save encrypted file";
+                FileSave.DefaultExt = "enc";
+                FileSave.ValidateNames = true;
+                FileSave.FileName = FileSelector.FileName;
+                bool? result = FileSave.ShowDialog();
+                crypto.WorkHandler += crypto_WorkHandler;
+                crypto.CompleteHandler += crypto_CompleteHandler;
+                crypto.EncryptFile(FileSelector.FileName, FileSave.FileName, PasswordField.Password);
+            }
+            else
+            {
+                string newFile = (FileSelector.FileName.Split('.'))[FileSelector.FileName.Split('.').Length - 1];
+                FileSave.Title = "Save decrypted file";
+                FileSave.DefaultExt = "";
+                FileSave.ValidateNames = true;
+                FileSave.FileName = newFile;
+                bool? result = FileSave.ShowDialog();
+                crypto.DecryptFile(FileSelector.FileName, FileSave.FileName, PasswordField.Password);
+            }
         }
 
         private void PasswordField_KeyUp(object sender, KeyEventArgs e)
@@ -67,23 +111,7 @@ namespace YetAnotherEncryptionToolGUI
             {
                 PasswordField.BorderBrush = Brushes.Green;
                 EncryptDecryptButton.Visibility = Visibility.Visible;
-                if (taskType == Action.Encrypting)
-                {
-                    FileSave.Title = "Save encrypted file";
-                    FileSave.DefaultExt = "enc";
-                    FileSave.ValidateNames = true;
-                    FileSave.FileName = FileSelector.FileName;
-                    bool? result = FileSave.ShowDialog();
-                }
-                else
-                {
-                    string newFile = (FileSelector.FileName.Split('.'))[FileSelector.FileName.Split('.').Length - 1];
-                    FileSave.Title = "Save decrypted file";
-                    FileSave.DefaultExt = "";
-                    FileSave.ValidateNames = true;
-                    FileSave.FileName = newFile;
-                    bool? result = FileSave.ShowDialog();
-                }
+
             }
         }
 
@@ -92,6 +120,13 @@ namespace YetAnotherEncryptionToolGUI
             string MatchPassPattern = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,32}$";
             if (password != null) return Regex.IsMatch(password, MatchPassPattern);
             else return false;
+        }
+
+        private void DisableUI(bool disableUI)
+        {
+            PasswordField.IsEnabled = !disableUI;
+            SelectFileButton.IsEnabled = !disableUI;
+            EncryptDecryptButton.IsEnabled = !disableUI;
         }
     }
 }

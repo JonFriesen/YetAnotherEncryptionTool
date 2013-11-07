@@ -9,61 +9,99 @@ using Microsoft.VisualBasic;
 
 namespace YetAnotherEncryptionTool
 {
+    public delegate void WorkEventHandler(object sender, CryptoEventArgs e);
+    public delegate void WorkCompleteHandler(object sender, EventArgs e);
+
     public class FileCrypto
     {
-        public static void EncryptFile(string inputFile, string outputFile, string skey)
+        public event WorkEventHandler WorkHandler;
+        public event WorkCompleteHandler CompleteHandler;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="inputFile"></param>
+        /// <param name="outputFile"></param>
+        /// <param name="skey"></param>
+        public async void EncryptFile(string inputFile, string outputFile, string skey)
         {
-            try
-            {
-                using (FileStream fsCrypt = new FileStream(outputFile, FileMode.Create))
+            System.Diagnostics.Debug.WriteLine(DateTime.Now.ToString() + " --> Starting Encryption");
+            await Task.Factory.StartNew(() =>
                 {
-                    using (ICryptoTransform encryptor = CreateAESKey(skey).CreateEncryptor())
+                    try
                     {
-                        using (CryptoStream cs = new CryptoStream(fsCrypt, encryptor, CryptoStreamMode.Write))
+                        using (FileStream fsCrypt = new FileStream(outputFile, FileMode.Create))
                         {
-                            using (FileStream fsIn = new FileStream(inputFile, FileMode.Open))
+                            using (ICryptoTransform encryptor = CreateAESKey(skey).CreateEncryptor())
                             {
-                                int data;
-                                while ((data = fsIn.ReadByte()) != -1)
+                                using (CryptoStream cs = new CryptoStream(fsCrypt, encryptor, CryptoStreamMode.Write))
                                 {
-                                    cs.WriteByte((byte)data);
+                                    using (FileStream fsIn = new FileStream(inputFile, FileMode.Open))
+                                    {
+                                        int data;
+                                        while ((data = fsIn.ReadByte()) != -1)
+                                        {
+                                            cs.WriteByte((byte)data);
+                                            var e = new CryptoEventArgs();
+                                            e.TotalWork = (int)fsIn.Length;
+                                            e.WorkDone = (int)fsIn.Position;
+                                            WorkHandler(this, e);
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Encryption Failed", ex);
-            }
+                    catch (Exception ex)
+                    {
+                        throw new Exception("Encryption Failed", ex);
+                    }
+                });
+            CompleteHandler(this, EventArgs.Empty);
+            System.Diagnostics.Debug.WriteLine(DateTime.Now.ToString() + " <-- Finishing Encryption");
         }
-        public static void DecryptFile(string inputFile, string outputFile, string skey)
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="inputFile"></param>
+        /// <param name="outputFile"></param>
+        /// <param name="skey"></param>
+        public async void DecryptFile(string inputFile, string outputFile, string skey)
         {
-            try
-            {
-                using (FileStream fsCrypt = new FileStream(inputFile, FileMode.Open))
+            System.Diagnostics.Debug.WriteLine(DateTime.Now.ToString() + " --> Starting Decryption");
+            await Task.Factory.StartNew(() =>
                 {
-                    using (FileStream fsOut = new FileStream(outputFile, FileMode.Create))
+                    try
                     {
-                        using (ICryptoTransform decryptor = CreateAESKey(skey).CreateDecryptor())
+                        using (FileStream fsCrypt = new FileStream(inputFile, FileMode.Open))
                         {
-                            using (CryptoStream cs = new CryptoStream(fsCrypt, decryptor, CryptoStreamMode.Read))
+                            using (FileStream fsOut = new FileStream(outputFile, FileMode.Create))
                             {
-                                int data;
-                                while ((data = cs.ReadByte()) != -1)
+                                using (ICryptoTransform decryptor = CreateAESKey(skey).CreateDecryptor())
                                 {
-                                    fsOut.WriteByte((byte)data);
+                                    using (CryptoStream cs = new CryptoStream(fsCrypt, decryptor, CryptoStreamMode.Read))
+                                    {
+                                        int data;
+                                        while ((data = cs.ReadByte()) != -1)
+                                        {
+                                            fsOut.WriteByte((byte)data);
+                                            var e = new CryptoEventArgs();
+                                            e.TotalWork = (int)fsOut.Length;
+                                            e.WorkDone = data;
+                                            WorkHandler(this, e);
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Decryption Failed", ex);
-            }
+                    catch (Exception ex)
+                    {
+                        throw new Exception("Decryption Failed", ex);
+                    }
+                });
+            CompleteHandler(this, EventArgs.Empty);
+            System.Diagnostics.Debug.WriteLine(DateTime.Now.ToString() + " <-- Finishing Encryption");
         }
         /// <summary>
         /// Creates the AES key needed for encryption/decryption
@@ -81,5 +119,14 @@ namespace YetAnotherEncryptionTool
             aes.Mode = CipherMode.CBC;
             return aes;
         }
+    }
+    /// <summary>
+    ///  EventArgs for getting the UI work down and work to go
+    ///  to update the progress bar
+    /// </summary>
+    public class CryptoEventArgs : EventArgs
+    {
+        public int TotalWork { get; set; }
+        public int WorkDone { get; set; }
     }
 }

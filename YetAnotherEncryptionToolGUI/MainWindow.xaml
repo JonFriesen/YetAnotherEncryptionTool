@@ -7,12 +7,12 @@
             <RowDefinition Height="103*"/>
             <RowDefinition Height="36*"/>
         </Grid.RowDefinitions>
-        <Button Content="Select File" HorizontalAlignment="Left" Margin="10,43,0,0" VerticalAlignment="Top" Width="75" Click="FileSelectButton_Click"/>
+        <Button Content="Select File" HorizontalAlignment="Left" Margin="10,43,0,0" VerticalAlignment="Top" Width="75" Click="FileSelectButton_Click" Name="SelectFileButton"/>
         <Label Content="No File Selected" HorizontalAlignment="Left" Margin="90,40,0,0" VerticalAlignment="Top" Name="FilePathLabel"/>
-        <PasswordBox HorizontalAlignment="Left" Margin="90,71,0,0" VerticalAlignment="Top" Width="235" Name="PasswordField" KeyUp="PasswordField_KeyUp"/>
+        <PasswordBox HorizontalAlignment="Left" Margin="90,71,0,0" VerticalAlignment="Top" Width="182" Name="PasswordField" KeyUp="PasswordField_KeyUp"/>
         <Label Content="Password" HorizontalAlignment="Left" Margin="30,66,0,0" VerticalAlignment="Top"/>
         <Button Content="Encrypt" HorizontalAlignment="Left" Margin="218,0.333,0,0" VerticalAlignment="Top" Width="75" Grid.Row="1" Click="EncryptDecryptButton_Click" Visibility="Hidden" Name="EncryptDecryptButton"/>
-        <ProgressBar HorizontalAlignment="Left" Height="20" Margin="10,0,0,0" VerticalAlignment="Top" Width="193" Grid.Row="1" Visibility="Hidden" Name="ProgressBar"/>
+        <ProgressBar HorizontalAlignment="Left" Height="20" Margin="10,0,0,0" VerticalAlignment="Top" Width="193" Grid.Row="1" Visibility="Hidden" Name="ProgressBar" Minimum="0" Maximum="100"/>
 
     </Grid>
 </Window>

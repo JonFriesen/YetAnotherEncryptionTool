@@ -47,7 +47,7 @@ namespace YetAnotherEncryptionTool
                     if (args[0] == "-E")
                     {
                         Console.WriteLine("Attempting to encrypt: " + args[1]);
-                        FileCrypto.EncryptFile(args[1], args[1] + ".enc", password);
+                        //FileCrypto.EncryptFile(args[1], args[1] + ".enc", password);
                     }
                     if (args[0] == "-D")
                     {
@@ -61,7 +61,7 @@ namespace YetAnotherEncryptionTool
                         {
                             Interaction.InputBox("Enter a new file name", "Yet another encryption tool", "", 0, 0);
                         }
-                        FileCrypto.DecryptFile(args[1], args[1], password);
+                        //FileCrypto.DecryptFile(args[1], args[1], password);
                     }
                 }
                 else
