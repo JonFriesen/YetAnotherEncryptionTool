@@ -76,8 +76,8 @@ namespace YetAnotherEncryptionToolGUI
 
         private void EncryptDecryptButton_Click(object sender, RoutedEventArgs e)
         {
-            DisableUI(true);
-            ProgressBar.Visibility = Visibility.Visible;
+            crypto.WorkHandler += crypto_WorkHandler;
+            crypto.CompleteHandler += crypto_CompleteHandler;
             if (taskType == CryptoAction.Encrypting)
             {
                 FileSave.Title = "Save encrypted file";
@@ -85,19 +85,29 @@ namespace YetAnotherEncryptionToolGUI
                 FileSave.ValidateNames = true;
                 FileSave.FileName = FileSelector.FileName;
                 bool? result = FileSave.ShowDialog();
-                crypto.WorkHandler += crypto_WorkHandler;
-                crypto.CompleteHandler += crypto_CompleteHandler;
-                crypto.EncryptFile(FileSelector.FileName, FileSave.FileName, PasswordField.Password);
+                if (result == true)
+                {
+                    DisableUI(true);
+                    ProgressBar.Visibility = Visibility.Visible;
+                    crypto.EncryptFile(FileSelector.FileName, FileSave.FileName, PasswordField.Password);
+                    return;
+                }
             }
             else
             {
                 string newFile = (FileSelector.FileName.Split('.'))[FileSelector.FileName.Split('.').Length - 1];
                 FileSave.Title = "Save decrypted file";
-                FileSave.DefaultExt = "";
+                FileSave.DefaultExt = "enc";
                 FileSave.ValidateNames = true;
                 FileSave.FileName = newFile;
                 bool? result = FileSave.ShowDialog();
-                crypto.DecryptFile(FileSelector.FileName, FileSave.FileName, PasswordField.Password);
+                if (result == true)
+                {
+                    DisableUI(true);
+                    ProgressBar.Visibility = Visibility.Visible;
+                    crypto.DecryptFile(FileSelector.FileName, FileSave.FileName, PasswordField.Password);
+                    return;
+                }
             }
         }
 
