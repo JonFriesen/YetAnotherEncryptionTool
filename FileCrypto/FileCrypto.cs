@@ -87,7 +87,7 @@ namespace YetAnotherEncryptionTool
                                             fsOut.WriteByte((byte)data);
                                             var e = new CryptoEventArgs();
                                             e.TotalWork = (int)fsOut.Length;
-                                            e.WorkDone = data;
+                                            e.WorkDone = (int)fsOut.Position;
                                             WorkHandler(this, e);
                                         }
                                     }
