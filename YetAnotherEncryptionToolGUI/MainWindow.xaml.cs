@@ -41,16 +41,27 @@ namespace YetAnotherEncryptionToolGUI
         {
             this.Dispatcher.Invoke((Action)(() =>
                 {
-                    System.Diagnostics.Debug.WriteLine("Updating Progress Bar: " + e.WorkDone + " of " + e.TotalWork + " = " + ((double)e.WorkDone / (double)e.TotalWork)*100 + "%");
-                    ProgressBar.Value = ((double)e.WorkDone / (double)e.TotalWork) * 100;
+                    ProgressBar.Value = e.CompletionPercentage;
                 }));
         }
 
-        void crypto_CompleteHandler(object sender, EventArgs e)
+        void crypto_CompleteHandler(object sender, CryptoCompleteEventArgs e)
         {
             this.Dispatcher.Invoke((Action)(() =>
             {
-                System.Diagnostics.Debug.WriteLine("Encryption Complete");
+                //Reset Progress Bar
+                ProgressBar.Visibility = Visibility.Hidden;
+                ProgressBar.Value = 0;
+                // Setup Completion label
+                if (e.ElapsedTime.CompareTo(new TimeSpan(0, 0, 1)) < 0)
+                {
+                    FinishedLabel.Content = "Completed in less then a second.";
+                }
+                else
+                {
+                    FinishedLabel.Content = "Completed in " + e.ElapsedTime.ToString(@"mm\:ss");
+                }
+                
                 DisableUI(false);
             }));
         }
@@ -137,6 +148,8 @@ namespace YetAnotherEncryptionToolGUI
             PasswordField.IsEnabled = !disableUI;
             SelectFileButton.IsEnabled = !disableUI;
             EncryptDecryptButton.IsEnabled = !disableUI;
+            if(disableUI)
+                FinishedLabel.Visibility = Visibility.Hidden;
         }
     }
 }
