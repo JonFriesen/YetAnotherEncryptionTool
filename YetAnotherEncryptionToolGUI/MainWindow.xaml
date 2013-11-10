@@ -14,6 +14,18 @@
         <Button Content="Encrypt" HorizontalAlignment="Left" Margin="218,0.333,0,0" VerticalAlignment="Top" Width="75" Grid.Row="1" Click="EncryptDecryptButton_Click" Visibility="Hidden" Name="EncryptDecryptButton"/>
         <ProgressBar HorizontalAlignment="Left" Height="20" Margin="10,0,0,0" VerticalAlignment="Top" Width="193" Grid.Row="1" Visibility="Hidden" Name="ProgressBar" Minimum="0" Maximum="100"/>
         <Label Content="" HorizontalAlignment="Left" Margin="10,96,0,0" VerticalAlignment="Top" Grid.RowSpan="2" Name="FinishedLabel"/>
+        <Image Margin="277,70,31,5" Source="System-Error-icon.png" Stretch="Fill" Name="PasswordErrorImage" Visibility="Hidden">
+            <Image.ToolTip>
+                <ToolTip>
+                    <StackPanel>
+                        <TextBlock FontWeight="Bold">Password Invalid</TextBlock>
+                        <TextBlock FontWeight="Medium">Your password must:</TextBlock>
+                        <TextBlock>- Contain uppercase, lowercase, and numerical characters</TextBlock>
+                        <TextBlock>- Be between 8 and 32 characters in length</TextBlock>
+                    </StackPanel>
+                </ToolTip>
+            </Image.ToolTip>
+        </Image>
 
     </Grid>
 </Window>

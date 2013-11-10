@@ -126,12 +126,19 @@ namespace YetAnotherEncryptionToolGUI
         {
             if (!ValidatePassword(PasswordField.Password))
             {
+                System.Diagnostics.Debug.WriteLine("Password Contains Errors");
                 PasswordField.BorderBrush = Brushes.Red;
+                PasswordErrorImage.IsEnabled = true;
+                PasswordErrorImage.Visibility = Visibility.Visible;
+
             }
             else
             {
+                System.Diagnostics.Debug.WriteLine("Password meets restrictions");
                 PasswordField.BorderBrush = Brushes.Green;
                 EncryptDecryptButton.Visibility = Visibility.Visible;
+                PasswordErrorImage.IsEnabled = false;
+                PasswordErrorImage.Visibility = Visibility.Hidden;
 
             }
         }
